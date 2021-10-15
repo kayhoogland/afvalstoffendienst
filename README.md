@@ -28,6 +28,6 @@ poetry run uvicorn api:app
 
 This will fill an SQLite database for your address. The data is exposed through FastAPI on localhost port 8000.
 
-Docs: `/docs`
-All dates: `/dates`
-Specific date: `/dates/{date}`
+- Docs: `/docs`
+- All dates: `/dates`
+- Specific date: `/dates/{date}`
