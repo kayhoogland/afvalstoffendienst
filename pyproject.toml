@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "afvalstoffendienst"
+version = "0.1.0"
+description = ""
+authors = ["Kay Hoogland <kayhoogland@hey.com>"]
+packages = [
+         {'include' = 'src' }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0"
+jupyter = "^1.0.0"
+pandas = "^1.3.3"
+gazpacho = "^1.1"
+typer = "^0.4.0"
+fastapi = "^0.70.0"
+uvicorn = { version = "^0.15.0", extras = ["standard"] }
+requests = "^2.26.0"
+sqlmodel = "^0.0.4"
+python-dotenv = "^0.19.1"
+
+[tool.poetry.dev-dependencies]
+black = "^21.9b0"
+isort = "^5.9.3"
+pylint = "^2.11.1"
+mypy = "^0.910"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
