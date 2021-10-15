@@ -1,12 +1,11 @@
-from typing import Optional
 import os
-from dotenv import load_dotenv
+from typing import Optional
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from src import scrape
-
-from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 
 class Date(SQLModel, table=True):
@@ -22,6 +21,7 @@ connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
 
 app = FastAPI()
+
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
@@ -43,8 +43,6 @@ def fill_table():
                 session.add(Date(kind=k, date=d))
         session.commit()
     return True
-
-
 
 
 @app.on_event("startup")
