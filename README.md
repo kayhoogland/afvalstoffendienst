@@ -1,7 +1,7 @@
 # Afvalstoffendienst
 
 Small application to scrape the dates of afvalstoffendienstkalender.nl and make it available through a REST API.
-The API exposes the **reminder dates** which is the date one day before the pick up date.
+The API exposes the **reminder dates** which is the date one day before the pickup date.
 
 ## Getting started
 
