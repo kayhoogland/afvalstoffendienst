@@ -31,3 +31,10 @@ This will fill an SQLite database for your address. The data is exposed through 
 - Docs: `/docs`
 - All dates: `/dates`
 - Specific date: `/dates/{date}`
+
+## With Docker
+
+```
+docker build . --tag afvalstoffendienst
+docker run -p 80:80 afvalstoffendienst
+```
