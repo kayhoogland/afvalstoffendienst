@@ -1,6 +1,5 @@
 from datetime import datetime
 from functools import cached_property
-from typing import Set
 
 import pandas as pd
 from gazpacho import Soup, get

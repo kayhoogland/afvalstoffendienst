@@ -14,8 +14,8 @@ class Date(SQLModel, table=True):
     date: str
 
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+SQLITE_FILE_NAME = "database.db"
+sqlite_url = f"sqlite:///{SQLITE_FILE_NAME}"
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
@@ -39,8 +39,8 @@ def fill_table():
     scraper = scrape.Scrape(postal_code, number)
     with Session(engine) as session:
         for k, dates in scraper.reminder_dates_for_all_kinds.items():
-            for d in dates:
-                session.add(Date(kind=k, date=d))
+            for date in dates:
+                session.add(Date(kind=k, date=date))
         session.commit()
     return True
 
@@ -61,6 +61,6 @@ def all_dates():
 
 
 @app.get("/dates/{date}")
-def date(date: str):
+def reminder_date(date: str):
     with Session(engine) as session:
         return session.exec(select(Date).where(Date.date == date)).first()
