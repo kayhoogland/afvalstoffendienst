@@ -3,6 +3,9 @@
 Small application to scrape the dates of afvalstoffendienstkalender.nl and make it available through a REST API.
 The API exposes the **reminder dates** which is the date one day before the pickup date.
 
+
+I personally use this with Node-RED to announce reminders through my Alexa speakers.
+
 ## Getting started
 
 Create a file named `.env` containing your information
@@ -31,3 +34,10 @@ This will fill an SQLite database for your address. The data is exposed through 
 - Docs: `/docs`
 - All dates: `/dates`
 - Specific date: `/dates/{date}`
+
+## With Docker
+
+```
+docker build . --tag afvalstoffendienst
+docker run -p 80:80 afvalstoffendienst
+```
