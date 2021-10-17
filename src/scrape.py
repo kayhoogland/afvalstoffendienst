@@ -1,8 +1,9 @@
 from datetime import datetime
+from functools import cached_property
+from typing import Set
 
 import pandas as pd
 from gazpacho import Soup, get
-from functools import cached_property
 
 URL = "https://afvalstoffendienstkalender.nl/nl/{postal_code}/{number}"
 MONTHS = [
@@ -48,14 +49,12 @@ class Scrape:
             if p.text not in [kind, "vandaag"]
         )
 
-    def reminder_dates(self, dates):
+    def reminder_dates_for_kind(self, kind: str):
+        dates = self.dates_for_kind(kind)
         return sorted([self.build_reminder_date(d) for d in dates])
 
-    def reminder_dates_for_kind(self, kind: str):
-        return self.reminder_dates(self.dates_for_kind(kind))
-
     @staticmethod
-    def build_reminder_date(date):
+    def build_reminder_date(date: str):
         _, day, month = date.split(" ")
         month_number = MONTH_MAP[month]
         date = pd.to_datetime((f"{current_year()}-{month_number}-{day.rjust(2, '0')}"))
