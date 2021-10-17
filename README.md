@@ -3,6 +3,9 @@
 Small application to scrape the dates of afvalstoffendienstkalender.nl and make it available through a REST API.
 The API exposes the **reminder dates** which is the date one day before the pickup date.
 
+
+I personally use this with Node-RED to announce reminders through my Alexa speakers.
+
 ## Getting started
 
 Create a file named `.env` containing your information
