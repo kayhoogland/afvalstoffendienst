@@ -50,12 +50,12 @@ class Scrape:
 
     def reminder_dates_for_kind(self, kind: str):
         dates = self.dates_for_kind(kind)
-        return sorted([self.build_reminder_date(d) for d in dates])
+        return sorted([self.build_reminder_date(d) for d in dates if len(d.split(" ")) == 4])
 
     @staticmethod
     def build_reminder_date(date: str):
-        _, day, month = date.split(" ")
+        _, day, month, year = date.split(" ")
         month_number = MONTH_MAP[month]
-        date = pd.to_datetime((f"{current_year()}-{month_number}-{day.rjust(2, '0')}"))
+        date = pd.to_datetime((f"{year}-{month_number}-{day.rjust(2, '0')}"))
         day_before = (date - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
         return day_before
