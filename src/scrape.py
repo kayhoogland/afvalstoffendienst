@@ -25,7 +25,7 @@ DATE_REGEX = "(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag) \\d{1
 
 
 MONTH_MAP = {m: str(i).rjust(2, "0") for m, i in zip(MONTHS, range(1, len(MONTHS) + 1))}
-ALLOWED_KINDS = ["papier", "gft", "restafval"]
+ALLOWED_KINDS = ["papier", "gft", "restafval", "pd"]
 
 
 def current_year():
