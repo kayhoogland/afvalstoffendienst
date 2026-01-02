@@ -1,31 +1,24 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import cached_property
+from typing import Dict, List
 
-import pandas as pd
-from gazpacho import Soup, get
-
-import re
-
-URL = "https://afvalstoffendienstkalender.nl/nl/{postal_code}/{number}"
-MONTHS = [
-    "januari",
-    "februari",
-    "maart",
-    "april",
-    "mei",
-    "juni",
-    "juli",
-    "augustus",
-    "september",
-    "oktober",
-    "november",
-    "december",
-]
-DATE_REGEX = "(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag) \\d{1,2} (januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)"
+import requests
 
 
-MONTH_MAP = {m: str(i).rjust(2, "0") for m, i in zip(MONTHS, range(1, len(MONTHS) + 1))}
-ALLOWED_KINDS = ["papier", "gft", "restafval", "pd"]
+BASE_URL = "https://afvalstoffendienst.nl"
+LOOKUP_URL = f"{BASE_URL}/adressen/{{postal_code}}:{{number}}"
+AFVALSTROMEN_URL = f"{BASE_URL}/rest/adressen/{{bagid}}/afvalstromen"
+CALENDAR_URL = f"{BASE_URL}/rest/adressen/{{bagid}}/kalender/{{year}}"
+
+# Waste type ID to category name mapping
+# Based on analysis of waste types at address 5233AL:124
+WASTE_TYPE_MAPPING = {
+    4: "gft",        # groente,-fruit-en-tuinafval-en-etensresten (28/year)
+    1: "pd",         # plastic,-blik-en-drinkpakken (19/year)
+    2: "restafval",  # restafval (18/year)
+    7: "papier",     # papier-en-karton (13/year)
+    # Rare types like kerstbomen (ID 17, 1/year) are excluded
+}
 
 
 def current_year():
@@ -38,30 +31,59 @@ class Scrape:
         self.number = number
 
     @cached_property
-    def soup(self):
-        html = get(URL.format(postal_code=self.postal_code, number=self.number))
-        return Soup(html)
+    def address_id(self) -> str:
+        """Get the bagid (address ID) from postal code and house number."""
+        url = LOOKUP_URL.format(postal_code=self.postal_code, number=self.number)
+        response = requests.get(url)
+        response.raise_for_status()
+
+        data = response.json()
+        if not data or len(data) == 0:
+            raise ValueError(f"No address found for {self.postal_code}:{self.number}")
+
+        return data[0]["bagid"]
 
     @cached_property
-    def reminder_dates_for_all_kinds(self):
-        return {k: self.reminder_dates_for_kind(k) for k in ALLOWED_KINDS}
+    def waste_types(self) -> Dict[int, str]:
+        """Get configured waste types.
 
-    def dates_for_kind(self, kind: str):
-        return set(
-            p.text
-            for p in self.soup.find("p", {"class": kind}, partial=False)
-            if p.text not in [kind, "vandaag"]
-        )
+        Returns only the waste types defined in WASTE_TYPE_MAPPING.
+        """
+        return WASTE_TYPE_MAPPING
 
-    def reminder_dates_for_kind(self, kind: str):
-        dates = [re.search(DATE_REGEX, d) for d in self.dates_for_kind(kind)]
-        print(dates)
-        return sorted([self.build_reminder_date(d.string) for d in dates if d])
+    @cached_property
+    def calendar_data(self) -> List[Dict]:
+        """Get calendar data for current and next year."""
+        current = current_year()
+        years = [current, current + 1]
 
-    @staticmethod
-    def build_reminder_date(date: str):
-        weekday, day, month = date.split(" ")
-        month_number = MONTH_MAP[month]
-        date = pd.to_datetime((f"{current_year()}-{month_number}-{day.rjust(2, '0')}"))
-        day_before = (date - pd.Timedelta(days=1)).strftime("%Y-%m-%d")
-        return day_before
+        all_data = []
+        for year in years:
+            url = CALENDAR_URL.format(bagid=self.address_id, year=year)
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            all_data.extend(data)
+
+        return all_data
+
+    @cached_property
+    def reminder_dates_for_all_kinds(self) -> Dict[str, List[str]]:
+        """Get reminder dates for all waste types."""
+        return {
+            waste_type_name: self.reminder_dates_for_kind(waste_type_id)
+            for waste_type_id, waste_type_name in self.waste_types.items()
+        }
+
+    def reminder_dates_for_kind(self, waste_type_id: int) -> List[str]:
+        """Get reminder dates for a specific waste type ID."""
+        # Filter calendar data for this waste type
+        reminder_dates = []
+        for entry in self.calendar_data:
+            if entry["afvalstroom_id"] == waste_type_id:
+                # Parse the pickup date and subtract one day
+                pickup_date = datetime.fromisoformat(entry["ophaaldatum"])
+                reminder_date = pickup_date - timedelta(days=1)
+                reminder_dates.append(reminder_date.strftime("%Y-%m-%d"))
+
+        return sorted(reminder_dates)

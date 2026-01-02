@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(poetry run python:*)",
+      "Bash(poetry run uvicorn:*)",
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(docker logs:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:afvalstoffendienst.nl)",
+      "Bash(python:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)"
+    ]
+  }
+}
